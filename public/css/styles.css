@@ -1,26 +1,26 @@
 :root {
-    --blue-700: #0d47a1;
-    --blue-600: #1565c0;
-    --blue-400: #5c9cf5;
-    --blue-300: #a9c7f2;
-    --blue-100: #dbe9fc;
-    --blue-50: #f1f6fe;
-    --ink: #0a2a66;
-    --ink-2: #3d5a8a;
+    --blue-700: #087f83;
+    --blue-600: #109b98;
+    --blue-400: #58c8bd;
+    --blue-300: #91ded2;
+    --blue-100: #d6f3ed;
+    --blue-50: #effbf8;
+    --ink: #153c42;
+    --ink-2: #55777a;
     --white: #ffffff;
-    --green-600: #1e8e5a;
-    --green-100: #e6f5ed;
-    --green-900: #14532d;
+    --green-600: #168673;
+    --green-100: #e3f7f1;
+    --green-900: #14594e;
   
     /* Bootstrap toma estos valores */
     --bs-primary: var(--blue-600);
-    --bs-primary-rgb: 21, 101, 192;
+    --bs-primary-rgb: 16, 155, 152;
     --bs-link-color: var(--blue-600);
-    --bs-link-color-rgb: 21, 101, 192;
+    --bs-link-color-rgb: 16, 155, 152;
     --bs-link-hover-color: var(--blue-700);
     --bs-body-bg: var(--white);
     --bs-body-color: var(--ink);
-    --bs-body-color-rgb: 10, 42, 102;
+    --bs-body-color-rgb: 21, 60, 66;
     --bs-secondary-color: var(--ink-2);
     --bs-border-color: var(--blue-100);
     --bs-code-color: var(--blue-700);
@@ -31,6 +31,7 @@
 
   body {
     line-height: 1.55;
+    background: var(--blue-50);
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -53,7 +54,7 @@
   }
   
   .wm-wrap {
-    max-width: 980px;
+      max-width: 1200px;
   }
   
   .wm-divider {
@@ -127,6 +128,170 @@
   padding-bottom: 2.5rem;
 }
 
+.wm-layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.wm-sidebar {
+  position: sticky;
+  top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--blue-100);
+  border-radius: 10px;
+  background: var(--white);
+}
+
+.wm-sidebar-title {
+  margin: 0 0 0.75rem;
+  color: var(--ink-2);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.wm-sidebar-nav {
+  gap: 0.35rem;
+}
+
+.wm-nav-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.wm-nav-link:hover {
+  background: var(--blue-50);
+  color: var(--blue-700);
+}
+
+.wm-nav-link.active {
+  background: var(--blue-100);
+  color: var(--blue-700);
+}
+
+.wm-nav-link > .bi {
+  margin-top: 0.1rem;
+  font-size: 1.15rem;
+}
+
+.wm-nav-link span {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.wm-nav-link small {
+  color: var(--ink-2);
+  line-height: 1.35;
+}
+
+.wm-model-status {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--blue-100);
+  color: var(--green-900);
+  font-size: 0.85rem;
+}
+
+.wm-model-status.is-empty {
+  color: var(--ink-2);
+}
+
+.wm-page-heading {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 6.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.4rem;
+  overflow: hidden;
+  border: 1px solid var(--blue-100);
+  border-radius: 12px;
+  background:
+    radial-gradient(ellipse at 88% 120%, rgba(88, 200, 189, 0.2), transparent 46%),
+    linear-gradient(120deg, #ffffff, var(--blue-50));
+}
+
+.wm-page-heading-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.wm-weather-art {
+  position: relative;
+  width: 150px;
+  height: 72px;
+  flex: 0 0 150px;
+  color: var(--blue-600);
+  opacity: 0.75;
+}
+
+.wm-weather-art .bi {
+  position: absolute;
+  line-height: 1;
+}
+
+.wm-cloud-main {
+  top: 14px;
+  right: 28px;
+  font-size: 3.5rem;
+  color: var(--blue-400);
+}
+
+.wm-cloud-small {
+  top: 3px;
+  right: 0;
+  font-size: 1.7rem;
+  color: var(--blue-300);
+}
+
+.wm-cloud-back {
+  top: 38px;
+  left: 8px;
+  font-size: 2rem;
+  color: var(--blue-300);
+}
+
+.wm-weather-art .wm-weather-sun {
+  top: 0;
+  left: 50px;
+  font-size: 1.5rem;
+  color: #e8b94f;
+}
+
+.wm-weather-art .wm-weather-rain {
+  top: 49px;
+  right: 44px;
+  font-size: 1.15rem;
+  color: var(--blue-700);
+}
+
+.wm-empty-state {
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--blue-300);
+  border-radius: 10px;
+  background: var(--blue-50);
+  text-align: center;
+}
+
+.wm-empty-state > .bi {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: var(--blue-600);
+  font-size: 2.5rem;
+}
+
 /* ---------- Botones y campos ---------- */
 .btn-primary {
   --bs-btn-bg: var(--blue-600);
@@ -137,7 +302,7 @@
   --bs-btn-active-border-color: var(--blue-700);
   --bs-btn-disabled-bg: var(--blue-600);
   --bs-btn-disabled-border-color: var(--blue-600);
-  --bs-btn-focus-shadow-rgb: 21, 101, 192;
+  --bs-btn-focus-shadow-rgb: 16, 155, 152;
   font-weight: 600;
   border-radius: 8px;
 }
@@ -149,9 +314,10 @@
   color: var(--ink);
 }
 
-form-control:focus {
+.form-control:focus,
+.form-select:focus {
     border-color: var(--blue-600);
-    box-shadow: 0 0 0 0.2rem rgba(21, 101, 192, 0.2);
+    box-shadow: 0 0 0 0.2rem rgba(16, 155, 152, 0.2);
   }
   
   /* ---------- Avisos ---------- */
@@ -204,7 +370,7 @@ form-control:focus {
   }
   
   .dropzone:focus-within {
-    outline: 3px solid rgba(21, 101, 192, 0.35);
+    outline: 3px solid rgba(16, 155, 152, 0.35);
     outline-offset: 2px;
   }
   
@@ -377,8 +543,57 @@ form-control:focus {
   .wm-hero {
     padding: 1.1rem 0;
   }
+
+  @media (max-width: 767px) {
+    .wm-layout {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .wm-sidebar {
+      position: static;
+      padding: 0.75rem;
+    }
+
+    .wm-sidebar-nav {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .wm-nav-link {
+      align-items: center;
+      flex-direction: column;
+      gap: 0.25rem;
+      padding: 0.6rem 0.35rem;
+      text-align: center;
+    }
+
+    .wm-nav-link span {
+      font-size: 0.8rem;
+    }
+
+    .wm-nav-link small {
+      display: none;
+    }
+
+    .wm-model-status {
+      margin-top: 0.5rem;
+      padding-top: 0.75rem;
+    }
+  }
   .wm-main {
     padding-top: 1.25rem;
+  }
+  .wm-page-heading {
+    min-height: 5.5rem;
+    padding: 0.9rem 1rem;
+  }
+  .wm-weather-art {
+    width: 78px;
+    height: 55px;
+    flex-basis: 78px;
+    transform: scale(0.72);
+    transform-origin: right center;
   }
   .wm-card-head,
   .wm-card-body {

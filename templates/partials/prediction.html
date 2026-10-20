@@ -1,0 +1,52 @@
+{% if prediction_result %}
+<div class="wm-summary mb-3" role="status">
+    <i class="bi bi-cloud-rain-fill"></i>
+    <p class="mb-0">
+        <strong>Predicción:</strong> {{ prediction_result.label }}
+        {% if prediction_result.probability is not none %}
+        <span class="d-block small">
+            Confianza estimada para esta clase: {{ prediction_result.probability }}%
+        </span>
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+
+<section class="wm-card mt-4" aria-labelledby="t-prediccion">
+    <div class="wm-card-head">
+        <h2 id="t-prediccion" class="h5 mb-0">
+            <i class="bi bi-cloud-sun me-2"></i>Predecir lluvia
+        </h2>
+        <p class="mb-0 small wm-muted">
+            Ingresa los valores de las variables que utilizó el modelo al entrenarse.
+        </p>
+    </div>
+    <div class="wm-card-body">
+        <form action="{{ url_for('predict') }}" method="post" data-loading="Calculando predicción…">
+            <div class="row g-3">
+                {% for field in feature_fields %}
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="feature-{{ loop.index }}">
+                        {{ field.name }}
+                    </label>
+                    {% if field.options %}
+                    <select class="form-select" id="feature-{{ loop.index }}" name="{{ field.name }}" required>
+                        <option value="" selected disabled>Selecciona un valor</option>
+                        {% for option in field.options %}
+                        <option value="{{ option }}">{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
+                    <input class="form-control" id="feature-{{ loop.index }}" name="{{ field.name }}"
+                        type="{{ 'number' if field.numeric else 'text' }}"
+                        {% if field.numeric %}step="any"{% endif %} required />
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <button class="btn btn-primary mt-4" type="submit">
+                <i class="bi bi-magic me-1"></i>Generar predicción
+            </button>
+        </form>
+    </div>
+</section>

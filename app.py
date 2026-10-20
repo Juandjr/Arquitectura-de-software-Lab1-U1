@@ -1,9 +1,10 @@
+import math
 from pathlib import Path
 
 import joblib
 import pandas as pd
 
-from flask import Flask, render_template, request, flash
+from flask import Flask, flash, redirect, render_template, request, url_for
 from sklearn.model_selection import train_test_split
 
 from filtros import (
@@ -29,14 +30,64 @@ MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 TARGET = "rain"
 
-@app.route("/", methods=["GET"])
-def index():
+
+def get_prediction_fields(saved):
+    features = saved["features"]
+    numeric_features = saved.get("numeric_features")
+    categorical_options = saved.get("categorical_options", {})
+
+    if numeric_features is None:
+        numeric_features = []
+        preprocessor = saved["model"].named_steps.get("preprocessor")
+        if preprocessor is not None:
+            for name, _, columns in preprocessor.transformers_:
+                if name == "numeric":
+                    numeric_features.extend(columns)
+
+    numeric_features = set(numeric_features)
+    return [
+        {
+            "name": feature,
+            "numeric": feature in numeric_features,
+            "options": categorical_options.get(feature, [])
+        }
+        for feature in features
+    ]
+
+
+def get_model_context():
+    if not MODEL_PATH.exists():
+        return None, None, None
+
+    saved = joblib.load(MODEL_PATH)
+    return saved, get_prediction_fields(saved), saved.get("results")
+
+
+def render_page(active_tab, prediction_result=None):
+    feature_fields = None
+    results = None
+    if MODEL_PATH.exists():
+        try:
+            _, feature_fields, results = get_model_context()
+        except Exception as exc:
+            app.logger.exception("Error al cargar el modelo guardado")
+            flash(f"No se pudo cargar el modelo guardado: {exc}")
+
     return render_template(
         "index.html",
-        results=None,
-        prediction_features=None,
-        prediction_result=None
+        active_tab=active_tab,
+        results=results,
+        feature_fields=feature_fields,
+        prediction_result=prediction_result
     )
+
+
+@app.route("/", methods=["GET"])
+def index():
+    active_tab = request.args.get("tab", "upload")
+    if active_tab not in {"upload", "results", "predict"}:
+        active_tab = "upload"
+    return render_page(active_tab)
 
 @app.route("/train", methods=["POST"])
 def train():
@@ -44,11 +95,11 @@ def train():
 
     if uploaded is None or not uploaded.filename:
         flash("Selecciona un archivo CSV.")
-        return index()
+        return redirect(url_for("index", tab="upload"))
 
     if not uploaded.filename.lower().endswith(".csv"):
         flash("El archivo debe tener extensión .csv.")
-        return index()
+        return redirect(url_for("index", tab="upload"))
 
     try:
         # Filtro 1: carga del dataset
@@ -84,15 +135,16 @@ def train():
         )
 
         # Guardar modelo y configuración
-        joblib.dump(
-            {
-                "model": model,
-                "features": list(X.columns),
-                "target": info["target"]
-            },
-            MODEL_PATH
-        )
-
+        numeric_features = X.select_dtypes(
+            include=["number", "bool"]
+        ).columns.tolist()
+        categorical_options = {
+            feature: list(dict.fromkeys(
+                str(value) for value in X[feature].dropna()
+            ))
+            for feature in X.columns
+            if feature not in numeric_features
+        }
         results = {
             "rows": len(validated),
             "features": len(X.columns),
@@ -105,33 +157,41 @@ def train():
             "model_path": str(MODEL_PATH)
         }
 
-        return render_template(
-            "index.html",
-            results=results,
-            prediction_features=list(X.columns),
-            prediction_result=None
+        joblib.dump(
+            {
+                "model": model,
+                "features": list(X.columns),
+                "target": info["target"],
+                "numeric_features": numeric_features,
+                "categorical_options": categorical_options,
+                "results": results
+            },
+            MODEL_PATH
         )
+        return redirect(url_for("index", tab="results"))
 
     except Exception as exc:
         app.logger.exception("Error durante el entrenamiento")
         flash(f"No se pudo procesar el dataset: {exc}")
-        return index()
+        return redirect(url_for("index", tab="upload"))
 
 @app.route("/predict", methods=["POST"])
 def predict():
     if not MODEL_PATH.exists():
         flash("Primero entrena un modelo subiendo un dataset.")
-        return index()
+        return redirect(url_for("index", tab="predict"))
 
     try:
         saved = joblib.load(MODEL_PATH)
 
         features = saved["features"]
         model = saved["model"]
+        feature_fields = get_prediction_fields(saved)
 
         values = {}
 
-        for feature in features:
+        for field in feature_fields:
+            feature = field["name"]
             raw_value = request.form.get(feature, "").strip()
 
             if raw_value == "":
@@ -139,10 +199,19 @@ def predict():
                     f"El campo '{feature}' es obligatorio."
                 )
 
-            # Convertir a número cuando corresponda.
-            try:
-                values[feature] = float(raw_value)
-            except ValueError:
+            if field["numeric"]:
+                try:
+                    value = float(raw_value)
+                except ValueError as exc:
+                    raise ValueError(
+                        f"El campo '{feature}' debe ser numérico."
+                    ) from exc
+                if not math.isfinite(value):
+                    raise ValueError(
+                        f"El campo '{feature}' debe ser un número finito."
+                    )
+                values[feature] = value
+            else:
                 values[feature] = raw_value
 
         sample = pd.DataFrame(
@@ -156,8 +225,9 @@ def predict():
 
         if hasattr(model, "predict_proba"):
             probabilities = model.predict_proba(sample)[0]
+            predicted_index = list(model.classes_).index(prediction)
             probability = round(
-                float(max(probabilities)) * 100,
+                float(probabilities[predicted_index]) * 100,
                 2
             )
 
@@ -168,15 +238,16 @@ def predict():
 
         return render_template(
             "index.html",
-            results=None,
-            prediction_features=features,
+            active_tab="predict",
+            results=saved.get("results"),
+            feature_fields=feature_fields,
             prediction_result=prediction_result
         )
 
     except Exception as exc:
         app.logger.exception("Error durante la predicción")
         flash(f"No se pudo generar la predicción: {exc}")
-        return index()
+        return redirect(url_for("index", tab="predict"))
 
 if __name__ == "__main__":
     app.run(
